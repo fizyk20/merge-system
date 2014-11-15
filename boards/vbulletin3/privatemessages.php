@@ -58,21 +58,25 @@ class VBULLETIN3_Converter_Module_Privatemessages extends Converter_Module_Priva
 		$touserarray = unserialize($data['touserarray']);
 		$insert_data['toid'] = 0;
 		$recipients = array();
-		$recipients['to'] = array();
-		if(is_array($touserarray['cc']) && !empty($touserarray['cc']))	// why would you even do that?
+		// main recipients are in cc array
+		if(is_array($touserarray['cc']))
 		{
-			$touserarray = $touserarray['cc'];
-			if(count($touserarray) == 1)
-			{
-				// hack to get the only element of the array
-				foreach($touserarray as $id => $name)
-				{
-					$insert_data['toid'] = $this->get_import->uid($id);
-				}
-			}
-			foreach($touserarray as $id => $name)
+			$recipients['to'] = array();
+			foreach($touserarray['cc'] as $id => $name)
 			{
 				$recipients['to'][] = $this->get_import->uid($id);
+				// set toid if there is only one recipient
+				if(count($touserarray['cc']) == 1)
+					$insert_data['toid'] = $this->get_import->uid($id);
+			}
+		}
+		// import bcc, too
+		if(is_array($touserarray['bcc']) && !empty($touserarray['bcc']))
+		{
+			$recipients['bcc'] = array();
+			foreach($touserarray['bcc'] as $id => $name)
+			{
+				$recipients['bcc'][] = $this->get_import->uid($id);
 			}
 		}
 		$insert_data['recipients'] = serialize($recipients);
