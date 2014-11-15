@@ -85,12 +85,6 @@ class BBPRESS_Converter extends Converter
 	var $parser_class = "html";
 
 	/**
-	 * An array of supported databases
-	 * WordPress (and therefor bbPress) only support MySQL
-	 */
-	var $supported_databases = array("mysql");
-
-	/**
 	 * Convert a bbPress group ID into a MyBB group ID
 	 *
 	 * @param int Group ID

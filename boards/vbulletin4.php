@@ -87,12 +87,6 @@ class VBULLETIN4_Converter extends Converter
 	);
 
 	/**
-	 * An array of supported databases
-	 * vB only supports MySQL
-	 */
-	var $supported_databases = array("mysql");
-
-	/**
 	 * Convert a vB group ID into a MyBB group ID
 	 *
 	 * @param int Group ID

@@ -82,12 +82,6 @@ class IPB4_Converter extends Converter {
 	);
 
 	/**
-	 * An array of supported databases
-	 * IPB only supports MySQL
-	 */
-	var $supported_databases = array("mysql");
-
-	/**
 	 * Convert a IPB group ID into a MyBB group ID
 	 *
 	 * @param int Group ID

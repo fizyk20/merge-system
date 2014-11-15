@@ -13,33 +13,86 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.<br /><br />Please make sure IN_MYBB is defined.");
 }
 
-class BBCode_Parser extends BBCode_Parser_Plain {
-
-	// This contains the attachment bbcode which is handled as special code as the id needs to be changed too
-	var $attachment = "\[attach\]([0-9]+)\[/attach\]";
+class BBCode_Parser {
 
 	function convert($text)
 	{
 		$find = array(
-			'#\[COLOR\="([a-zA-Z]*|\#?[\da-fA-F]{3}|\#?[\da-fA-F]{6})"\](.*?)\[/COLOR\]#i',
+			'[CENTER]',
+			'[/CENTER]',
+			'[LEFT]',
+			'[/LEFT]',
+			'[RIGHT]',
+			'[/RIGHT]',
+			'[QUOTE]',
+			'[/QUOTE]',
+			'[B]',
+			'[/B]',
+			'[PHP]',
+			'[/PHP]',
+			'[URL',
+			'[/URL]',
+			'[I]',
+			'[/I]',
+			'[U]',
+			'[/U]',
+			'[IMG]',
+			'[/IMG]',
+			'[/QUOTE]',
+		);
+
+		$replace = array(
+			'[align=center]',
+			'[/align]',
+			'[align=left]',
+			'[/align]',
+			'[align=right]',
+			'[/align]',
+			'[quote]',
+			'[/quote]',
+			'[b]',
+			'[/b]',
+			'[php]',
+			'[/php]',
+			'[url',
+			'[/url]',
+			'[i]',
+			'[/i]',
+			'[u]',
+			'[/u]',
+			'[img]',
+			'[/img]',
+			'[/quote]',
+		);
+
+		if(function_exists("str_ireplace"))
+		{
+			$text = str_ireplace($find, $replace, $text);
+		}
+		else
+		{
+			$text = str_replace($find, $replace, $text);
+		}
+
+		$find = array(
+			'#\[COLOR\="(.*?)"\](.*?)\[/COLOR\]#i', // TODO: Test?!
+			'#\[COLOR\=(.*?)\](.*?)\[/COLOR\]#i',
 			'#\[QUOTE\=(.*?);([0-9]+?)\]#i',
 			'#\[url\="(.*?)"](.*?)\[/url\]#i',
-			'#\[email\="(.*?)"](.*?)\[/email\]#i',
+			'#\[url\=(.*?)](.*?)\[/url\]#i',
 		);
 
 		$replace = array(
 			'[color=$1]$2[/color]',
+			'[color=$1]$2[/color]',
 			"[quote=$1]",
 			'[url=$1]$2[/url]',
-			'[email=$1]$2[/email]',
+			'[url=$1]$2[/url]',
 		);
 
 		$text = preg_replace($find, $replace, $text);
 
-		// Closing line tags
-		$text = str_ireplace("[/hr]", "", $text);
-
-		return parent::convert($text);
+		return $text;
 	}
 }
 ?>

@@ -14,7 +14,6 @@ if(!defined("IN_MYBB"))
 }
 
 $plugins->add_hook("datahandler_login_validate_start", "loginconvert_convert", 1);
-$plugins->add_hook("member_resetpassword_process", "loginconvert_pw_reset");
 
 global $valid_login_types;
 $valid_login_types = array(
@@ -100,19 +99,6 @@ function loginconvert_deactivate()
 	}
 }
 
-function loginconvert_pw_reset()
-{
-	global $db, $user;
-
-	// Someone reseted their password, clear the passwordconvert columns for this user
-	$update = array(
-		"passwordconvert" => "",
-		"passwordconverttype" => "",
-		"passwordconvertsalt" => ""
-	);
-	$db->update_query("users", $update, "uid={$user['uid']}");
-}
-
 function loginconvert_convert(&$login)
 {
 	global $mybb, $valid_login_types, $db, $settings;
@@ -146,10 +132,6 @@ function loginconvert_convert(&$login)
 		$function = "check_".$valid_login_types[$user['passwordconverttype']];
 		$check = $function($login->data['password'], $user);
 
-		// Make sure the password isn't tested again
-		// For both, wrong and correct passwords
-		unset($login->data['password']);
-
 		if(!$check)
 		{
 			// Yeah, that function is called later too, but we need to know whether the captcha is right
@@ -172,6 +154,9 @@ function loginconvert_convert(&$login)
 			);
 
 			$db->update_query("users", $update, "uid='{$user['uid']}'");
+
+			// Make sure the password isn't tested again
+			unset($login->data['password']);
 
 			// Also make sure all data is available when creating the session (otherwise SQL errors -.-)
 			$login->login_data = array_merge($user, $update);
@@ -277,7 +262,7 @@ function check_smf2($password, $user)
 		$is_sha1 = false;
 	}
 
-	if($is_sha1 && sha1(strtolower(preg_replace("#\_smf2\.0\_import(\d+)$#i", '', $user['username'])).utf8_decode($password)) == $user['passwordconvert'])
+	if($is_sha1 && sha1(strtolower(preg_replace("#\_smf2\.0\_import(\d+)$#i", '', $user['username'])).$password) == $user['passwordconvert'])
 	{
 		return true;
 	}
@@ -318,13 +303,7 @@ function check_punbb($password, $user)
 
 function check_phpbb3($password, $user)
 {
-	// The bcrypt hash is at least 60 chars and is used in phpBB 3.1
-	if (my_strlen($user['passwordconvert']) >= 60 && $user['passwordconvert'] == crypt($password, $user['passwordconvert']))
-	{
-		return true;
-	}
-	// The rest here is phpBB 3.0
-	else if (my_strlen($user['passwordconvert']) == 34)
+	if (my_strlen($user['passwordconvert']) == 34)
 	{
 		if(phpbb3_crypt_private($password, $user['passwordconvert']) === $user['passwordconvert'])
 		{
@@ -334,7 +313,7 @@ function check_phpbb3($password, $user)
 		return false;
 	}
 
-    if(md5($user['passwordconvert']) === $hash)
+	if(md5($user['passwordconvert']) === $hash)
 	{
 		return true;
 	}
