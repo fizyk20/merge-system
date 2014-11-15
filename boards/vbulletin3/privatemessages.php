@@ -54,7 +54,7 @@ class VBULLETIN3_Converter_Module_Privatemessages extends Converter_Module_Priva
 			$insert_data['folder'] = 1;
 		}
 		$touserarray = unserialize($data['touserarray']);
-		if(count($touserarray) > 1)
+		if(count($touserarray) > 1 || count($touserarray) < 1)
 		{
 			$insert_data['toid'] = 0;
 		}
