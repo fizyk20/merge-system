@@ -53,26 +53,27 @@ class VBULLETIN3_Converter_Module_Privatemessages extends Converter_Module_Priva
 		{
 			$insert_data['folder'] = 1;
 		}
-		$touserarray = unserialize($data['touserarray']);
-		if(count($touserarray) > 1 || count($touserarray) < 1)
-		{
-			$insert_data['toid'] = 0;
-		}
-		else
-		{
-			// hack to get the only element of the array
-			foreach($touserarray as $id => $name)
-			{
-				$insert_data['toid'] = $this->get_import->uid($id);
-			}
-		}
 
-		// Rebuild the recipients array
+		// Rebuild the recipients array and toid field
+		$touserarray = unserialize($data['touserarray']);
+		$insert_data['toid'] = 0;
 		$recipients = array();
 		$recipients['to'] = array();
-		foreach($touserarray as $id => $name)
+		if(is_array($touserarray['cc']) && !empty($touserarray['cc']))	// why would you even do that?
 		{
-			$recipients['to'][] = $this->get_import->uid($id);
+			$touserarray = $touserarray['cc'];
+			if(count($touserarray) == 1)
+			{
+				// hack to get the only element of the array
+				foreach($touserarray as $id => $name)
+				{
+					$insert_data['toid'] = $this->get_import->uid($id);
+				}
+			}
+			foreach($touserarray as $id => $name)
+			{
+				$recipients['to'][] = $this->get_import->uid($id);
+			}
 		}
 		$insert_data['recipients'] = serialize($recipients);
 
