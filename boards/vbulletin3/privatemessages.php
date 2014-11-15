@@ -45,31 +45,38 @@ class VBULLETIN3_Converter_Module_Privatemessages extends Converter_Module_Priva
 		$insert_data['import_pmid'] = $data['pmid'];
 		$insert_data['uid'] = $this->get_import->uid($data['userid']);
 		$insert_data['fromid'] = $this->get_import->uid($data['fromuserid']);
-		$insert_data['toid'] = $this->get_import->uid($data['touserid']);
-		$touserarray = unserialize($data['touserarray']);
-
-		// Rebuild the recipients array
-		$recipients = array();
-		if(is_array($touserarray['cc']) && !empty($touserarray['cc']))
-		{
-			foreach($touserarray['cc'] as $key => $to)
-			{
-				$username = $this->get_username($to);
-				$recipients['to'][] = $this->get_import->uid($username['userid']);
-			}
-		}
-		$insert_data['recipients'] = serialize($recipients);
-
 		if($data['folderid'] == -1)
 		{
 			$insert_data['folder'] = 2;
 		}
 		else
 		{
-			$insert_data['folder'] = 0;
+			$insert_data['folder'] = 1;
+		}
+		$touserarray = unserialize($data['touserarray']);
+		if(count($touserarray) > 1)
+		{
+			$insert_data['toid'] = 0;
+		}
+		else
+		{
+			// hack to get the only element of the array
+			foreach($touserarray as $id => $name)
+			{
+				$insert_data['toid'] = $this->get_import->uid($id);
+			}
 		}
 
-		$insert_data['subject'] = encode_to_utf8($data['subject'], "pm", "privatemessages");
+		// Rebuild the recipients array
+		$recipients = array();
+		$recipients['to'] = array();
+		foreach($touserarray as $id => $name)
+		{
+			$recipients['to'][] = $this->get_import->uid($id);
+		}
+		$insert_data['recipients'] = serialize($recipients);
+
+		$insert_data['subject'] = encode_to_utf8($data['title'], "pm", "privatemessages");
 		$insert_data['status'] = $data['messageread'];
 		$insert_data['dateline'] = $data['dateline'];
 		$insert_data['message'] = encode_to_utf8($this->bbcode_parser->convert($data['message']), "pmtext", "privatemessages");
